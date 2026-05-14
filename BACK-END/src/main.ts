@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './module/app.module';
@@ -11,11 +12,21 @@ async function createDatabaseIfNotExists() {
   const database = process.env.DB_DATABASE || 'sistema';
   const superDatabase = process.env.DB_SUPER_DB || 'postgres';
 
-  const client = new Client({ host, port, user, password, database: superDatabase });
+  const client = new Client({
+    host,
+    port,
+    user,
+    password,
+    database: superDatabase,
+  });
 
   try {
     await client.connect();
-    const result = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [database]);
+
+    const result = await client.query(
+      'SELECT 1 FROM pg_database WHERE datname = $1',
+      [database],
+    );
 
     if (result.rowCount === 0) {
       await client.query(`CREATE DATABASE "${database}"`);
@@ -32,12 +43,21 @@ async function createDatabaseIfNotExists() {
 }
 
 async function bootstrap() {
+  await createDatabaseIfNotExists();
+
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
+
   await app.listen(process.env.PORT ?? 3000);
+
+  console.log('Application running');
 }
+
 bootstrap();
