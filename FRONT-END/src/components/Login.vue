@@ -4,7 +4,7 @@
 
   <div class="login-box">
 
-    <h1>Cristóvão</h1>
+    <h1>Cristóvãoooo</h1>
 
     <input v-model="email" placeholder="Email">
     <input v-model="senha" type="password" placeholder="Senha">
